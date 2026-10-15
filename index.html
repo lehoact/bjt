@@ -21,6 +21,7 @@
     --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.3);
   }
 }
+:root[data-theme="dark"] .kex-t.ken{background:#3a2f17;color:#e8c37a}
 :root[data-theme="dark"]{
   --bg:#141a19; --card:#1c2423; --ink:#e8eeec; --ink-2:#b4c0bd; --muted:#84918e;
   --line:#33403e; --line-2:#263130; --accent:#3fb5a0; --accent-ink:#0d1716; --accent-soft:#1f3a35;
@@ -172,6 +173,17 @@ mark{background:linear-gradient(transparent 62%,var(--hl) 62%);color:inherit;fon
 .gnote dd{margin:0}
 .gnote dd.jp{font-weight:500}
 
+/* keigo examples */
+.kex{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.kex-h{font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.kex-i{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:start;padding:6px 0}
+.kex-t{font-size:11.5px;font-weight:600;border-radius:5px;padding:2px 7px;text-align:center;margin-top:4px;background:var(--line-2);color:var(--ink-2)}
+.kex-t.son{background:var(--accent-soft);color:var(--accent)}
+.kex-t.ken{background:#f6ead0;color:#8a5a00}
+.kex-i .jp{font-size:16.5px;line-height:1.65}
+.kex-i .v{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+@media (max-width:640px){ .kex-i{grid-template-columns:1fr;gap:2px} .kex-t{justify-self:start;margin-top:0} }
+
 /* keigo table */
 .kt{border-collapse:collapse;width:100%;margin-top:10px;font-size:15.5px}
 .kt th{text-align:left;font-weight:600;color:var(--ink-2);padding:8px 12px 8px 0;width:118px;vertical-align:top;font-size:13.5px}
@@ -232,6 +244,7 @@ mark{background:linear-gradient(transparent 62%,var(--hl) 62%);color:inherit;fon
   .ln .jp{font-size:16.5px}
   .kbd{display:none}
 }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kex-t.ken{background:#3a2f17;color:#e8c37a} }
 
 .hero{padding:18px 0 6px}
 .hero h2{font-size:28px;margin:0 0 6px;font-weight:600;letter-spacing:-.01em}
