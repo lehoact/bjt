@@ -245,6 +245,18 @@ mark{background:linear-gradient(transparent 62%,var(--hl) 62%);color:inherit;fon
   .kbd{display:none}
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kex-t.ken{background:#3a2f17;color:#e8c37a} }
+/* tabs chọn bộ (2200 từ / 600 từ…) và chọn playlist */
+.series{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;border-bottom:1px solid var(--line-2);padding-bottom:12px}
+.stab{background:none;border:1px solid var(--line-2);border-radius:10px;padding:8px 14px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-2);cursor:pointer;display:flex;align-items:baseline;gap:6px}
+.stab small{font-size:12px;font-weight:500;color:var(--muted)}
+.stab:hover{border-color:var(--accent)}
+.stab.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stab.on small{color:inherit;opacity:.8}
+.stab.soon{opacity:.6;cursor:default}
+.stab.soon:hover{border-color:var(--line-2)}
+/* điện thoại: một hàng, vuốt ngang (tab đang chọn tự cuộn vào giữa) */
+@media (max-width:640px){ .series{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .series::-webkit-scrollbar{display:none} .stab{flex:0 0 auto;white-space:nowrap} }
 
 </style>
 <script>try{const t=localStorage.getItem('bjtvocab:theme');if(t)document.documentElement.dataset.theme=JSON.parse(t);}catch(e){}</script>
@@ -260,6 +272,7 @@ mark{background:linear-gradient(transparent 62%,var(--hl) 62%);color:inherit;fon
 <main class="wrap">
   <section id="setup" class="col">
     <div class="panel">
+      <div class="series hidden" id="sets"></div>
       <h2 id="groupTitle"></h2>
       <p class="sub" id="groupSub"></p>
       <div class="row" style="margin-bottom:10px" id="quick"></div>
@@ -394,15 +407,24 @@ if(MODULE==='vocab'){
   const others = (v,pool,n,key,filter0) => { const filter = o => !clash(v,o) && (!filter0 || filter0(o)); let c=pickN(pool.filter(o=>o.id!==v.id&&(!filter||filter(o))).map(key),n,[key(v)]);
     if(c.length<n) c=c.concat(pickN(DATA.filter(o=>o.id!==v.id&&(!filter||filter(o))).map(key),n-c.length,[key(v),...c])); return c; };
 
-  const lessons=[...new Set(DATA.map(v=>v.l))].sort((a,b)=>a-b);
+  // vocab comes in sets ("bộ"): the 2200-word book (45 lessons) and the 600+ list. Items of the 2200 set keep group key = lesson
+  // number, so progress saved before keeps working; items of another set carry v.set and use group key "set:lesson".
+  const setOf = v => v.set || '2200';
+  const groupOf = v => setOf(v)==='2200' ? String(v.l) : setOf(v)+':'+v.l;
+  const groups=[]; DATA.forEach(v=>{ const k=groupOf(v); if(!groups.some(g=>g.k===k)) groups.push({k, label:String(v.l), set:setOf(v)}); });
+  const SETS=[
+    {k:'2200', label:'2200 từ BJT', note:'45 bài', sub:'Mỗi lượt 20 câu, lấy từ các bài đã chọn. 45 bài theo sách “Chinh phục từ vựng BJT”. Thanh xanh = tỉ lệ từ đã trả lời đúng ít nhất 1 lần.',
+     quick:[['1-15','Bài 1–15'],['16-30','Bài 16–30'],['31-45','Bài 31–45']]},
+    {k:'600', label:'600+ từ thường gặp', sub:'Tổng hợp 600+ từ vựng BJT thường gặp.', quick:[]},
+  ].map(s=>({...s, count:DATA.filter(v=>setOf(v)===s.k).length}));
   MODULES.vocab = {
     key:'vocab', name:'Từ vựng', title:'Ôn tập từ vựng', quizTitle:'Kiểm tra từ vựng', unit:'từ',
     items: DATA,
-    groupTitle:'Chọn bài', groupSub:'Mỗi lượt 20 câu, lấy từ các bài đã chọn. Thanh xanh = tỉ lệ từ đã trả lời đúng ít nhất 1 lần.',
-    groups: lessons.map(l=>({k:String(l), label:String(l)})),
-    groupOf: v => String(v.l),
-    quick:[['all','Chọn tất cả'],['none','Bỏ chọn'],['1-15','Bài 1–15'],['16-30','Bài 16–30'],['31-45','Bài 31–45']],
-    select: k => k==='all'?lessons.map(String):k==='none'?[]:(([a,b])=>lessons.filter(l=>l>=a&&l<=b).map(String))(k.split('-').map(Number)),
+    sets: SETS, setOfGroup: k => (groups.find(g=>g.k===k)||{}).set,
+    groupTitle:'Chọn bài', groupSub:SETS[0].sub,
+    groups, groupOf,
+    quick:[['all','Chọn tất cả'],['none','Bỏ chọn']],
+    select: (k,set) => { const gs=groups.filter(g=>g.set===set); return k==='all'?gs.map(g=>g.k):k==='none'?[]:(([a,b])=>gs.filter(g=>+g.label>=a&&+g.label<=b).map(g=>g.k))(k.split('-').map(Number)); },
     types:[
       {k:'doc',  label:'Cách đọc · 漢字読み', name:'Cách đọc', desc:'Chọn cách đọc đúng của từ Kanji'},
       {k:'nghia',label:'Ý nghĩa · 意味', name:'Ý nghĩa', desc:'Từ tiếng Nhật → nghĩa tiếng Việt'},
@@ -618,6 +640,10 @@ let prefs = Object.assign({groups:[M.groups[0].k], types:M.types.map(t=>t.k), mo
 prefs.groups = prefs.groups.filter(g=>M.groups.some(x=>x.k===g));
 // ?nhom=N (e.g. from the listening page) preselects one lesson/group
 { const g=new URLSearchParams(location.search).get('nhom'); if(g && M.groups.some(x=>x.k===g)) prefs.groups=[g]; }
+// modules with sets (vocab: 2200 / 600): one set is shown at a time, and only its groups stay selected
+if(M.sets){ const open=M.sets.filter(s=>s.count); if(!open.some(s=>s.k===prefs.set)) prefs.set=open[0].k;
+  const g0=prefs.groups.find(g=>M.setOfGroup(g)); if(g0) prefs.set=M.setOfGroup(g0);
+  prefs.groups=prefs.groups.filter(g=>M.setOfGroup(g)===prefs.set); if(!prefs.groups.length) prefs.groups=[M.groups.find(g=>g.set===prefs.set).k]; }
 prefs.types = prefs.types.filter(t=>M.types.some(x=>x.k===t));
 if(!prefs.types.length) prefs.types=M.types.map(t=>t.k);
 const savePrefs = () => store.set('prefs:'+M.key, prefs);
@@ -772,11 +798,17 @@ function show(id){
   window.scrollTo(0,0);
 }
 function renderSetup(){
+  const set = M.sets && M.sets.find(s=>s.k===prefs.set);
+  if(set) $('#sets').innerHTML=M.sets.map(s=>s.count
+    ? `<button class="stab ${s.k===set.k?'on':''}" data-set="${s.k}">${s.label}<small>${s.note||s.count+' từ'}</small></button>`
+    : `<button class="stab soon" disabled>${s.label}<small>更新中</small></button>`).join('');
+  $('#sets').classList.toggle('hidden', !set);
+  const on = $('#sets .stab.on'); if(on) on.parentNode.scrollLeft = on.offsetLeft - on.parentNode.offsetLeft - (on.parentNode.clientWidth - on.offsetWidth)/2;
   $('#groupTitle').textContent=M.groupTitle;
-  $('#groupSub').textContent=M.groupSub;
-  $('#quick').innerHTML=M.quick.map(([k,l])=>`<button class="mini" data-sel="${k}">${l}</button>`).join('');
+  $('#groupSub').textContent=set ? set.sub : M.groupSub;
+  $('#quick').innerHTML=M.quick.concat(set ? set.quick : []).map(([k,l])=>`<button class="mini" data-sel="${k}">${l}</button>`).join('');
   $('#lessons').className = M.wideGroups ? 'lessons wide' : 'lessons';
-  $('#lessons').innerHTML=M.groups.map(g=>{
+  $('#lessons').innerHTML=M.groups.filter(g=>!set || g.set===set.k).map(g=>{
     const ws=ITEMS.filter(v=>M.groupOf(v)===g.k); const known=ws.filter(v=>stats[v.id]&&stats[v.id].c>0).length;
     return `<button class="lchip ${prefs.groups.includes(g.k)?'on':''}" data-l="${g.k}"><b>${g.label}</b><small>${known}/${ws.length}</small><div class="bar"><i style="width:${known/ws.length*100}%"></i></div></button>`;
   }).join('');
@@ -794,7 +826,8 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('button,[data-review]'); if(!t) return;
   const d=t.dataset;
   if(d.l!==undefined){ const l=d.l; prefs.groups=prefs.groups.includes(l)?prefs.groups.filter(x=>x!==l):[...prefs.groups,l]; renderSetup(); }
-  else if(d.sel){ prefs.groups = M.select(d.sel); renderSetup(); }
+  else if(d.sel){ prefs.groups = M.select(d.sel, prefs.set); renderSetup(); }
+  else if(d.set){ if(d.set!==prefs.set){ prefs.set=d.set; prefs.groups=[M.groups.find(g=>g.set===d.set).k]; } renderSetup(); }
   else if(d.t){ prefs.types=prefs.types.includes(d.t)?prefs.types.filter(x=>x!==d.t):[...prefs.types,d.t]; renderSetup(); }
   else if(d.m){ prefs.mode=d.m; renderSetup(); }
   else if(d.go!==undefined){ go(+d.go); }

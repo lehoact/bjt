@@ -245,6 +245,18 @@ mark{background:linear-gradient(transparent 62%,var(--hl) 62%);color:inherit;fon
   .kbd{display:none}
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .kex-t.ken{background:#3a2f17;color:#e8c37a} }
+/* tabs chọn bộ (2200 từ / 600 từ…) và chọn playlist */
+.series{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;border-bottom:1px solid var(--line-2);padding-bottom:12px}
+.stab{background:none;border:1px solid var(--line-2);border-radius:10px;padding:8px 14px;font:inherit;font-size:14px;font-weight:600;color:var(--ink-2);cursor:pointer;display:flex;align-items:baseline;gap:6px}
+.stab small{font-size:12px;font-weight:500;color:var(--muted)}
+.stab:hover{border-color:var(--accent)}
+.stab.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stab.on small{color:inherit;opacity:.8}
+.stab.soon{opacity:.6;cursor:default}
+.stab.soon:hover{border-color:var(--line-2)}
+/* điện thoại: một hàng, vuốt ngang (tab đang chọn tự cuộn vào giữa) */
+@media (max-width:640px){ .series{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .series::-webkit-scrollbar{display:none} .stab{flex:0 0 auto;white-space:nowrap} }
 
 .hero{padding:18px 0 6px}
 .hero h2{font-size:28px;margin:0 0 6px;font-weight:600;letter-spacing:-.01em}
@@ -282,12 +294,12 @@ mark{background:linear-gradient(transparent 62%,var(--hl) 62%);color:inherit;fon
   <div class="tiles">
     <a class="tile" href="tu-vung.html" data-prefix="vocab" data-total="2217">
       <div class="kj">語彙</div>
-      <div><h3>Từ vựng</h3><p>2217 từ BJT trong 45 bài: cách đọc, ý nghĩa, chọn từ, điền vào câu.</p>
+      <div><h3>Từ vựng</h3><p>Bộ 2200 từ (45 bài) · bộ 600+ từ thường gặp (更新中). Cách đọc, ý nghĩa, chọn từ, điền vào câu.</p>
         <div class="prog"><div class="bar"><i></i></div><span></span></div></div>
       <div class="arrow">→</div></a>
-    <a class="tile" href="luyen-nghe.html" data-prefix="listen" data-total="47">
+    <a class="tile" href="luyen-nghe.html" data-prefix="listen" data-total="48">
       <div class="kj">聴解</div>
-      <div><h3>Luyện nghe</h3><p>45 bài hội thoại họp công sở (mỗi bài 50 từ vựng kèm kính ngữ) và 2 video cụm từ cố định. Video từ kênh nihongo rakuraku.</p>
+      <div><h3>Luyện nghe</h3><p>Hội thoại họp công sở, xếp theo playlist: 45 video 2200 từ · 2 video cụm từ cố định · 1 video kính ngữ. Video từ kênh nihongo rakuraku.</p>
         <div class="prog"><div class="bar"><i></i></div><span></span></div></div>
       <div class="arrow">→</div></a>
     <div class="tile soon" data-page="ngu-phap.html" aria-disabled="true">
